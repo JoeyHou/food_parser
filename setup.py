@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-from foodparser import foodparser
+# from foodparser import foodparser
 
 with open("README.md", "r") as readme_file:
     readme = readme_file.read()
@@ -8,7 +8,7 @@ with open("README.md", "r") as readme_file:
 
 setup(
     name="foodparser",
-    version=foodparser.version,
+    version='0.1.4',
     author="Joey Hou",
     author_email="z9hou@ucsd.edu",
     description="A package to parse food logging texts.",
