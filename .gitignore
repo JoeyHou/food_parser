@@ -2,6 +2,8 @@
 .DS_Store
 */.DS_Store
 tests/*
+foodparser/*.ipynb
+foodparser/.ipynb_checkpoints/*
 
 
 # Byte-compiled / optimized / DLL files
