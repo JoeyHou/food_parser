@@ -1,4 +1,5 @@
 from setuptools import setup, find_packages
+import pkg_resources
 # from foodparser import foodparser
 
 with open("README.md", "r") as readme_file:
@@ -8,7 +9,7 @@ with open("README.md", "r") as readme_file:
 
 setup(
     name="foodparser",
-    version='0.1.4',
+    version='0.1.8',
     author="Joey Hou",
     author_email="z9hou@ucsd.edu",
     description="A package to parse food logging texts.",
@@ -21,4 +22,7 @@ setup(
         "Programming Language :: Python :: 3.7",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
     ],
+    package_data = {
+        "foodparser": ["data/combined_gram_set.csv"]
+    }
 )

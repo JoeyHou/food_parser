@@ -14,6 +14,7 @@ nltk.download('wordnet')
 nltk.download('punkt')
 
 from spellchecker import SpellChecker
+import pkg_resources
 
 food_parser_data_dir = '../package_data/'
 
@@ -37,10 +38,15 @@ def run_setup():
 
 class FoodParser():
     def __init__(self):
-        self.version = '0.1.4'
+        self.__version__ = '0.1.8'
         self.wnl = WordNetLemmatizer()
         self.spell = SpellChecker()
         return
+
+    def test(self):
+        test_file = pkg_resources.resource_stream(__name__, "data/combined_gram_set.csv")
+        tmp_df = pd.read_csv(test_file)
+        return tmp_df
 
     def initialization(self):
         gram_mask, my_stop_words, final_measurement, all_gram_set, correction_dic, food_type_dict = run_setup()
