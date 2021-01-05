@@ -18,24 +18,6 @@ import pkg_resources
 
 food_parser_data_dir = '../foodparser/data/'
 
-def read_gram_set(pilepath):
-    combined_df = pd.read_csv(pilepath).drop_duplicates()
-    all_gram_set = []
-    for i in range(1, 6):
-        all_gram_set.append(set(combined_df.query('gram_type == ' + str(i)).gram_key.values))
-    combined_df.index = combined_df.gram_key
-    food_type_dict = dict(combined_df.food_type)
-    return all_gram_set, food_type_dict
-
-def run_setup():
-    gram_mask = pickle.load(open(food_parser_data_dir + 'gram_mask.pickle', 'rb'))
-    my_stop_words = pickle.load(open(food_parser_data_dir + 'my_stop_words.pickle', 'rb'))
-    final_measurement = pickle.load(open(food_parser_data_dir + 'final_measurement.pickle', 'rb'))
-    all_gram_set, food_type_dict = read_gram_set(food_parser_data_dir + 'combined_gram_set.csv')
-    correction_dic = pickle.load(open(food_parser_data_dir + 'correction_dic.pickle', 'rb'))
-    return gram_mask, my_stop_words, final_measurement, all_gram_set, correction_dic, food_type_dict
-
-
 class FoodParser():
     def __init__(self):
         self.__version__ = '0.1.8'
@@ -43,13 +25,31 @@ class FoodParser():
         self.spell = SpellChecker()
         return
 
+    def read_gram_set(self, pilepath):
+        # combined_df = pd.read_csv(pilepath).drop_duplicates()
+        combined_df = self.test().drop_duplicates()
+        all_gram_set = []
+        for i in range(1, 6):
+            all_gram_set.append(set(combined_df.query('gram_type == ' + str(i)).gram_key.values))
+        combined_df.index = combined_df.gram_key
+        food_type_dict = dict(combined_df.food_type)
+        return all_gram_set, food_type_dict
+
+    def run_setup(self, ):
+        gram_mask = pickle.load(open(food_parser_data_dir + 'gram_mask.pickle', 'rb'))
+        my_stop_words = pickle.load(open(food_parser_data_dir + 'my_stop_words.pickle', 'rb'))
+        final_measurement = pickle.load(open(food_parser_data_dir + 'final_measurement.pickle', 'rb'))
+        all_gram_set, food_type_dict = self.read_gram_set(food_parser_data_dir + 'combined_gram_set.csv')
+        correction_dic = pickle.load(open(food_parser_data_dir + 'correction_dic.pickle', 'rb'))
+        return gram_mask, my_stop_words, final_measurement, all_gram_set, correction_dic, food_type_dict
+
     def test(self):
         test_file = pkg_resources.resource_stream(__name__, "data/combined_gram_set.csv")
         tmp_df = pd.read_csv(test_file)
         return tmp_df
 
     def initialization(self):
-        gram_mask, my_stop_words, final_measurement, all_gram_set, correction_dic, food_type_dict = run_setup()
+        gram_mask, my_stop_words, final_measurement, all_gram_set, correction_dic, food_type_dict = self.run_setup()
         self.my_stop_words = my_stop_words
         self.final_measurement = final_measurement
         self.all_gram_set = all_gram_set
