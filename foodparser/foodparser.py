@@ -16,7 +16,7 @@ nltk.download('punkt')
 from spellchecker import SpellChecker
 import pkg_resources
 
-food_parser_data_dir = '../package_data/'
+food_parser_data_dir = '../foodparser/data/'
 
 def read_gram_set(pilepath):
     combined_df = pd.read_csv(pilepath).drop_duplicates()
@@ -130,20 +130,21 @@ class FoodParser():
         return return_sent
 
     ########## Handle Typo ##########
-    def fix_spelling(self, entry):
+    def fix_spelling(self, entry, speller_check = False):
         result = []
         for token in entry.split():
+            # Check known corrections
             if token in self.correction_dic.keys():
-                result.append(self.wnl.lemmatize(self.correction_dic[token]))
+                token_alt = self.wnl.lemmatize(self.correction_dic[token])
             else:
-                if token in self.tmp_correction.keys():
-                    token_alt = self.tmp_correction[token]
-                elif token not in self.food_type_dict.keys():
-                    token_alt = self.spell.correction(token)
+                if speller_check and token in self.tmp_correction.keys():
+                    token_alt = self.wnl.lemmatize(self.tmp_correction[token])
+                elif speller_check and token not in self.food_type_dict.keys():
+                    token_alt = self.wnl.lemmatize((self.spell.correction(token)))
                     self.tmp_correction[token] = token_alt
                 else:
-                    token_alt = token
-                result.append(self.wnl.lemmatize(token_alt))
+                    token_alt = self.wnl.lemmatize(token)
+            result.append(token_alt)
         return ' '.join(result)
 
     ########### Combine all cleaning ##########
