@@ -20,7 +20,7 @@ food_parser_data_dir = '../foodparser/data/'
 
 class FoodParser():
     def __init__(self):
-        self.__version__ = '0.1.8'
+        self.__version__ = '0.1.9'
         self.wnl = WordNetLemmatizer()
         self.spell = SpellChecker()
         return
