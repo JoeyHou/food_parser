@@ -20,14 +20,16 @@ food_parser_data_dir = '../foodparser/data/'
 
 class FoodParser():
     def __init__(self):
-        self.__version__ = '0.1.9'
+        # self.__version__ = '0.1.9'
         self.wnl = WordNetLemmatizer()
         self.spell = SpellChecker()
         return
 
     def read_gram_set(self, pilepath):
-        # combined_df = pd.read_csv(pilepath).drop_duplicates()
+        combined_df = pd.read_csv(pilepath).drop_duplicates()
         combined_df = self.test().drop_duplicates()
+        combined_df = combined_df.query('food_type in ["f", "b", "w", "m", "modifier"]')\
+            .reset_index(drop = True)
         all_gram_set = []
         for i in range(1, 6):
             all_gram_set.append(set(combined_df.query('gram_type == ' + str(i)).gram_key.values))

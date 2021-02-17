@@ -9,7 +9,7 @@ with open("README.md", "r") as readme_file:
 
 setup(
     name="foodparser",
-    version='0.1.9',
+    version='0.1.10',
     author="Joey Hou",
     author_email="z9hou@ucsd.edu",
     description="A package to parse food logging texts.",
