@@ -5,6 +5,7 @@ tests/*
 foodparser/*.ipynb
 foodparser/.ipynb_checkpoints/*
 test_data/*
+archived/*
 
 
 # Byte-compiled / optimized / DLL files

@@ -25,9 +25,9 @@ class FoodParser():
         self.spell = SpellChecker()
         return
 
-    def read_gram_set(self, pilepath):
-        combined_df = pd.read_csv(pilepath).drop_duplicates()
-        combined_df = self.test().drop_duplicates()
+    def read_gram_set(self, combined_df):
+        # combined_df = pd.read_csv(pilepath).drop_duplicates()
+        # combined_df = self.test().drop_duplicates()
         combined_df = combined_df.query('food_type in ["f", "b", "w", "m", "modifier"]')\
             .reset_index(drop = True)
         all_gram_set = []
@@ -37,30 +37,45 @@ class FoodParser():
         food_type_dict = dict(combined_df.food_type)
         return all_gram_set, food_type_dict
 
-    def run_setup(self, ):
-        gram_mask = pickle.load(open(food_parser_data_dir + 'gram_mask.pickle', 'rb'))
-        my_stop_words = pickle.load(open(food_parser_data_dir + 'my_stop_words.pickle', 'rb'))
-        final_measurement = pickle.load(open(food_parser_data_dir + 'final_measurement.pickle', 'rb'))
-        all_gram_set, food_type_dict = self.read_gram_set(food_parser_data_dir + 'combined_gram_set.csv')
-        correction_dic = pickle.load(open(food_parser_data_dir + 'correction_dic.pickle', 'rb'))
-        return gram_mask, my_stop_words, final_measurement, all_gram_set, correction_dic, food_type_dict
+    def run_setup(self):
+        setup_dict = {}
 
-    def test(self):
-        test_file = pkg_resources.resource_stream(__name__, "data/combined_gram_set.csv")
-        tmp_df = pd.read_csv(test_file)
-        return tmp_df
+        # Read combined df
+        combined_gram_set_df = pd.read_csv(pkg_resources.resource_stream(__name__, "data/combined_gram_set.csv"))
+        all_gram_set, food_type_dict = self.read_gram_set(combined_gram_set_df)
+        my_stop_words = combined_gram_set_df.query('food_type == "stopwords"').gram_key.values
+
+        # Read the correction history for fire-fighters
+        # correction_dic = pickle.load(open(pkg_resources.resource_stream(__name__, "data/correction_dic.pickle"), 'rb'))
+        correction_dic = pickle.load(pkg_resources.resource_stream(__name__, "data/correction_dic.pickle"))
+
+        # gram_mask = pickle.load(open(food_parser_data_dir + 'gram_mask.pickle', 'rb'))
+        # final_measurement = pickle.load(open(food_parser_data_dir + 'final_measurement.pickle', 'rb'))
+        # return gram_mask, my_stop_words, final_measurement, all_gram_set, correction_dic, food_type_dict
+
+        setup_dict['all_gram_set'] = all_gram_set
+        setup_dict['food_type_dict'] = food_type_dict
+        setup_dict['my_stop_words'] = my_stop_words
+        setup_dict['correction_dic'] = correction_dic
+        return setup_dict
+
+    # def test(self):
+    #     test_file = pkg_resources.resource_stream(__name__, "data/combined_gram_set.csv")
+    #     tmp_df = pd.read_csv(test_file)
+    #     return tmp_df
 
     def initialization(self):
-        gram_mask, my_stop_words, final_measurement, all_gram_set, correction_dic, food_type_dict = self.run_setup()
-        self.my_stop_words = my_stop_words
-        self.final_measurement = final_measurement
-        self.all_gram_set = all_gram_set
-        self.gram_mask = gram_mask
-        self.correction_dic = correction_dic
-        self.food_type_dict = food_type_dict
-
         self.tmp_correction = {}
         self.spell = SpellChecker()
+
+        # gram_mask, my_stop_words, final_measurement, all_gram_set, correction_dic, food_type_dict = self.run_setup()
+        setup_dict = self.run_setup()
+        self.all_gram_set = setup_dict['all_gram_set']
+        self.food_type_dict = setup_dict['food_type_dict']
+        self.my_stop_words = setup_dict['my_stop_words']
+        self.correction_dic = setup_dict['correction_dic']
+        # self.gram_mask = gram_mask # ?
+        # self.final_measurement = final_measurement
 
         # Load common stop words
         stop_words = stopwords.words('english')
@@ -190,9 +205,9 @@ class FoodParser():
 
         # Create an array of tags
         sentence_tag = np.array(['Unknown'] * len(tokens))
-        for i in range(len(sentence_tag)):
-            if tokens[i] in self.final_measurement:
-                sentence_tag[i] = 'MS'
+        # for i in range(len(sentence_tag)):
+        #     if tokens[i] in self.final_measurement:
+        #         sentence_tag[i] = 'MS'
 
         all_food = []
         food_counter = 0
@@ -234,9 +249,9 @@ class FoodParser():
                     elif tmp_unknown != '':
                         unknown_tokens.append(tmp_unknown)
                         tmp_unknown = ''
-        for i in range(len(result)):
-            if result[i] in self.gram_mask.keys():
-                 result[i] = self.gram_mask[result[i]]
+        # for i in range(len(result)):
+        #     if result[i] in self.gram_mask.keys():
+        #          result[i] = self.gram_mask[result[i]]
         if return_sentence_tag:
             return result, num_token, num_unknown, unknown_tokens
         else:
