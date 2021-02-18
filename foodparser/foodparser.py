@@ -4,6 +4,7 @@ import re
 import string
 import numpy as np
 import pandas as pd
+from tqdm import tqdm
 
 import nltk
 from nltk.stem import WordNetLemmatizer
@@ -16,7 +17,7 @@ nltk.download('punkt')
 from spellchecker import SpellChecker
 import pkg_resources
 
-food_parser_data_dir = '../foodparser/data/'
+# food_parser_data_dir = '../foodparser/data/'
 
 class FoodParser():
     def __init__(self):
@@ -25,7 +26,10 @@ class FoodParser():
         self.spell = SpellChecker()
         return
 
-    def read_gram_set(self, combined_df):
+    def read_gram_set(self):
+        return pd.read_csv(pkg_resources.resource_stream(__name__, "data/combined_gram_set.csv"))
+
+    def parse_gram_set(self, combined_df):
         # combined_df = pd.read_csv(pilepath).drop_duplicates()
         # combined_df = self.test().drop_duplicates()
         combined_df = combined_df.query('food_type in ["f", "b", "w", "m", "modifier"]')\
@@ -41,8 +45,8 @@ class FoodParser():
         setup_dict = {}
 
         # Read combined df
-        combined_gram_set_df = pd.read_csv(pkg_resources.resource_stream(__name__, "data/combined_gram_set.csv"))
-        all_gram_set, food_type_dict = self.read_gram_set(combined_gram_set_df)
+        combined_gram_set_df = self.read_gram_set()
+        all_gram_set, food_type_dict = self.parse_gram_set(combined_gram_set_df)
         my_stop_words = combined_gram_set_df.query('food_type == "stopwords"').gram_key.values
 
         # Read the correction history for fire-fighters
@@ -262,3 +266,22 @@ class FoodParser():
             return self.food_type_dict[food]
         else:
             return 'u'
+
+    ################# DataFrame Functions
+    def expand_entries(self, df):
+        assert 'desc_text' in df.columns, '[ERROR!] Required a column of "desc_text"!!'
+
+        all_entries = []
+        for idx in tqdm(range(df.shape[0])):
+            curr_row = df.iloc[idx]
+            logging = curr_row.desc_text
+            tmp_dict = dict(curr_row)
+            if ',' in logging:
+                for entry in logging.split(','):
+                    tmp_dict['desc_text'] = entry
+                    all_entries.append(tmp_dict)
+            else:
+                tmp_dict['desc_text'] = logging
+                all_entries.append(tmp_dict)
+
+        return pd.DataFrame(all_entries)
